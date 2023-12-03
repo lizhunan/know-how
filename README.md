@@ -34,9 +34,9 @@
         - 中断
     - 1.3 计算机网络（基于五层网络架构）
         - 基础概念与计算([文档](docs/1/1.3/overview.md)）
-        - 应用层
-        - 传输层
-        - 网络层([文档](docs/1/1.3/overview.md)
+        - 应用层([文档](docs/1/1.3/application_layer.md)
+        - 传输层([文档](docs/1/1.3/transfer_layer.md)
+        - 网络层([文档](docs/1/1.3/network_layer.md)
         - 数据链路层
         - 物理层
     - 1.4 计算机组成原理
@@ -76,3 +76,5 @@
 ## 编写规范
 
 ## 贡献者
+
+李竹楠(zhunan.li@outlook.com)

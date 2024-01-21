@@ -79,8 +79,10 @@
         - 强化学习
     - 4.2 深度学习
     - 4.3 计算机视觉
-        - 4.4.1 传统视觉(opencv)([文档](docs/4/4.3/opencv.md), [代码](code/4/4.3/README.md))
-        - 4.4.2 基于深度学习
+        - 概述([文档](docs/4/4.3/overview.md)）
+        - 图像预处理([文档](docs/4/4.3/preprocessing_td.md), [代码](code/4/4.3/README.md))
+        - 特征提取与匹配([文档](docs/4/4.3/feature_td.md))
+        - 基于深度学习
     - 4.4 NLP
     - 4.5 语音
     - 4.6 模型部署与优化

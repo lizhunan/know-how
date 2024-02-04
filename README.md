@@ -19,7 +19,7 @@
     - 1.1 数据结构与算法
         - 基本数据结构
         - 字符串算法([文档](docs/1/1.1/string_alg.md), [代码](code/1/1.1/string_alg/string_alg.cpp))
-        - 哈希表([文档](docs/1/1.1/hash-table.md), [代码]())
+        - 哈希表([文档](docs/1/1.1/hash-table.md), [代码](code/1/1.1/hash-table/README.md))
         - 树
         - 图([文档](docs/1/1.1/graph.md), [代码](code/1/1.1/graph/graph.py))
         - 排序算法
@@ -30,7 +30,7 @@
         - 概述([文档](docs/1/1.2/overview.md)）
         - 进程管理([文档](docs/1/1.2/process.md)）
         - 内存管理([文档](docs/1/1.2/memory.md)）
-        - 文件管理([文档](docs/1/1.2/file.md)）
+        - 文件管理([文档](docs/1/1.2/file-system.md)）
         - I/O管理([文档](docs/1/1.2/input-output.md)）
     - 1.3 计算机网络（基于五层网络架构）
         - 概述([文档](docs/1/1.3/overview.md)）

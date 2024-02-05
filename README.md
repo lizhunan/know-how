@@ -17,15 +17,18 @@
 
 - 1.计算机基础
     - 1.1 数据结构与算法
-        - 基本数据结构
-        - 字符串算法([文档](docs/1/1.1/string_alg.md), [代码](code/1/1.1/string_alg/string_alg.cpp))
-        - 哈希表([文档](docs/1/1.1/hash-table.md), [代码](code/1/1.1/hash-table/README.md))
-        - 树
+        - 数组
+        - 链表
+        - 栈
+        - 队列
+        - 树([文档](docs/1/1.1/tree.md), [代码](code/1/1.1/tree/README.md))
         - 图([文档](docs/1/1.1/graph.md), [代码](code/1/1.1/graph/graph.py))
-        - 排序算法
-        - 查找算法
-        - 算法思想
-        - 海量数据处理
+        - 字符串算法([文档](docs/1/1.1/string.md), [代码](code/1/1.1/string/string.cpp))
+        - 哈希表([文档](docs/1/1.1/hash-table.md), [代码](code/1/1.1/hash-table/README.md))
+        - 排序算法([文档](docs/1/1.1/sort.md), [代码]())
+        - 查找算法([文档](docs/1/1.1/searching.md), [代码]())
+        - 算法思想([文档](docs/1/1.1/algorithm.md), [代码]())
+        - 海量数据处理（暂缺）
     - 1.2 操作系统
         - 概述([文档](docs/1/1.2/overview.md)）
         - 进程管理([文档](docs/1/1.2/process.md)）
@@ -66,7 +69,7 @@
 	- 3.17 Git
 - 4.人工智能
     - 4.1 机器学习
-        - 概述
+        - 概述([文档](docs/4/4.1/overview.md))
         - 数据分析
         - 数据预处理
         - 线性回归
@@ -76,7 +79,7 @@
         - 决策树
         - 神经网络
         - 集成学习
-        - 模型评估
+        - 模型评估([文档](docs/4/4.1/evaluation.md), [代码]())
         - 无监督学习
         - 强化学习
     - 4.2 深度学习

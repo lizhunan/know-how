@@ -677,13 +677,259 @@ AVL树与BST的节点查找操作一致，在此不再赘述。
 
 ## 5. 堆
 
+堆 heap 是一种满足特定条件的完全二叉树，主要可分为两种类型，如下图所示。
+
+- 小顶堆 min heap：任意节点的值 < 其子节点的值。
+- 大顶堆 max heap：任意节点的值 > 其子节点的值。
+
+![](../../../pics/pics1/318.png)
+
+堆作为完全二叉树的一个特例，具有以下特性。
+
+- 最底层节点靠左填充，其他层的节点都被填满。
+- 我们将二叉树的根节点称为“堆顶”，将底层最靠右的节点称为“堆底”。
+- 对于大顶堆（小顶堆），堆顶元素（根节点）的值是最大（最小）的。
+
+需要指出的是，许多编程语言提供的是**优先队列(priority queue)**，这是一种抽象的数据结构，定义为具有优先级排序的队列。
+
+实际上，**堆通常用于实现优先队列，大顶堆相当于元素按从大到小的顺序出队的优先队列**。从使用角度来看，我们可以将“优先队列”和“堆”看作等价的数据结构。
+
+在实际应用中，我们可以直接使用编程语言提供的堆类（或优先队列类）。类似于排序算法中的“从小到大排列”和“从大到小排列”，我们可以通过设置一个 `flag` 或修改 `Comparator` 实现“小顶堆”与“大顶堆”之间的转换。代码如下所示：
+
+``` python
+# 初始化小顶堆
+min_heap, flag = [], 1
+# 初始化大顶堆
+max_heap, flag = [], -1
+
+# Python 的 heapq 模块默认实现小顶堆
+# 考虑将“元素取负”后再入堆，这样就可以将大小关系颠倒，从而实现大顶堆
+# 在本示例中，flag = 1 时对应小顶堆，flag = -1 时对应大顶堆
+
+# 元素入堆
+heapq.heappush(max_heap, flag * 1)
+heapq.heappush(max_heap, flag * 3)
+heapq.heappush(max_heap, flag * 2)
+heapq.heappush(max_heap, flag * 5)
+heapq.heappush(max_heap, flag * 4)
+
+# 获取堆顶元素
+peek: int = flag * max_heap[0] # 5
+
+# 堆顶元素出堆
+# 出堆元素会形成一个从大到小的序列
+val = flag * heapq.heappop(max_heap) # 5
+val = flag * heapq.heappop(max_heap) # 4
+val = flag * heapq.heappop(max_heap) # 3
+val = flag * heapq.heappop(max_heap) # 2
+val = flag * heapq.heappop(max_heap) # 1
+
+# 获取堆大小
+size: int = len(max_heap)
+
+# 判断堆是否为空
+is_empty: bool = not max_heap
+
+# 输入列表并建堆
+min_heap: list[int] = [1, 3, 2, 5, 4]
+heapq.heapify(min_heap)
+```
+
 ### 5.1 堆的实现
+
+下文实现的是大顶堆。若要将其转换为小顶堆，只需将所有大小逻辑判断取逆（例如，将 > 替换为 < ）。
+
+#### 5.1.1 堆的存储与表示
+
+完全二叉树非常适合用数组来表示。由于堆正是一种完全二叉树，**因此我们将采用数组来存储堆**。当使用数组表示二叉树时，元素代表节点值，索引代表节点在二叉树中的位置。**节点指针通过索引映射公式来实现**。如下图所示，给定索引 $i$ ，其左子节点的索引是 $2i+1$ ，右子节点的索引为 $2i+2$ ，父节点的索引为 $ \lfloor (i-1)/2 \rfloor$ 。当索引越界时，表示空节点或节点不存在。
+
+![](../../../pics/pics1/319.png)
+
+我们可以将索引映射公式封装成函数，方便后续使用，[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _left(self, i):
+    return 2 * i + 1
+
+def _right(self, i):
+    return 2 * i + 2
+
+def _parent(self, i):
+    return (i - 1) // 2  # 向下整除
+```
+
+#### 5.1.2 访问堆顶元素
+
+堆顶元素即为二叉树的根节点，也就是列表的首个元素，[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def peek(self) -> int:
+    return self.max_heap[0]
+```
+
+#### 5.1.3 元素入堆
+
+给定元素 `key` ，我们首先将其添加到堆底。添加之后，由于 `key` 可能大于堆中其他元素，堆的成立条件可能已被破坏，因此需要修复从插入节点到根节点的路径上的各个节点，这个操作被称为**堆化(heapify)**。
+
+考虑从入堆节点开始，**从底至顶执行堆化**。如下图所示，我们比较插入节点与其父节点的值，如果插入节点更大，则将它们交换。然后继续执行此操作，从底至顶修复堆中的各个节点，直至越过根节点或遇到无须交换的节点时结束。
+
+|Step 1|Step 2|Step 3|Step 4|Step 5|Step 6|Step 7|Step 8|Step 9|
+|---|---|---|---|---|---|---|---|---|
+|<div style="width:350pt"><image src='../../../pics/pics1/320.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/321.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/322.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/323.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/324.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/325.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/326.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/327.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/328.png' width="100%" height="100%"/></div>|
+
+设节点总数为 $n$ ，则树的高度为 $O(\log n)$ 。由此可知，堆化操作的循环轮数最多为 $O(\log n)$ ，**元素入堆操作的时间复杂度为 $O(\log n)$**。[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def push(self, key):
+    self.max_heap.append(key)
+    self._sift_up(self._size() - 1) # 从底至顶堆化    
+def _sift_up(self, i):
+    while True:
+        p = self._parent(i) # 获取节点 i 的父节点
+        # 当“越过根节点”或“节点无须修复”时，结束堆化
+        if p < 0 or self.max_heap[i] <= self.max_heap[p]:
+            break
+        self._swap(i, p) # 交换两节点
+        i = p # 循环向上堆化
+```
+
+#### 5.1.4 堆顶元素出堆
+
+堆顶元素是二叉树的根节点，即列表首元素。如果我们直接从列表中删除首元素，那么二叉树中所有节点的索引都会发生变化，这将使得后续使用堆化进行修复变得困难。**为了尽量减少元素索引的变动**，我们采用以下操作步骤。
+
+1. 交换堆顶元素与堆底元素（交换根节点与最右叶节点）。
+2. 交换完成后，将堆底从列表中删除（注意，由于已经交换，因此实际上删除的是原来的堆顶元素）。
+3. 从根节点开始，**从顶至底执行堆化**。
+
+如下图所示，**“从顶至底堆化”的操作方向与“从底至顶堆化”相反**，我们将根节点的值与其两个子节点的值进行比较，将最大的子节点与根节点交换。然后循环执行此操作，直到越过叶节点或遇到无须交换的节点时结束。
+
+|Step 1|Step 2|Step 3|Step 4|Step 5|Step 6|Step 7|Step 8|Step 9|Step 10|
+|---|---|---|---|---|---|---|---|---|---|
+|<div style="width:350pt"><image src='../../../pics/pics1/329.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/330.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/331.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/332.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/333.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/334.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/335.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/336.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/337.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/338.png' width="100%" height="100%"/></div>|
+
+与元素入堆操作相似，堆顶元素出堆操作的时间复杂度也为 $O(\log n)$ 。[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _sift_down(self, i):
+    while True:
+        # 判断节点 i, l, r 中值最大的节点，记为 max_
+        l, r, max_ = self._left(i), self._right(i), i
+        if l < self._size() and self.max_heap[l] > self.max_heap[max_]:
+            max_ = l
+        if r < self.size() and self.max_heap[r] > self.max_heap[max_]:
+            max_ = r
+        # 若节点 i 最大或索引 l, r 越界，则无须继续堆化，跳出
+        if max_ == i:
+            break
+        self._swap(i, max_)
+        i = max_
+def pop(self):
+    if self._size() == 0:
+        # 判空处理
+        raise IndexError('heap is empty.')
+    # 1. 交换根节点与最右叶节点（交换首元素与尾元素）
+    self._swap(0, self._size() - 1)
+    # 2. 删除节点
+    key = self.max_heap.pop()
+    # 3. 从顶至底堆化
+    self._sift_down(0)
+    return key
+```
 
 ### 5.2 堆的常见应用
 
+- **优先队列**：堆通常作为实现优先队列的首选数据结构，其入队和出队操作的时间复杂度均为 $O(\log n)$ 而建队操作为 $O(n)$ ，这些操作都非常高效。
+- **堆排序**：给定一组数据，我们可以用它们建立一个堆，然后不断地执行元素出堆操作，从而得到有序数据。然而，我们通常会使用一种更优雅的方式实现堆排序，详见“堆排序”。
+- **获取最大的 $k$ 个元素**：这是一个经典的算法问题，同时也是一种典型应用，例如选择热度前 10 的新闻作为微博热搜，选取销量前 10 的商品等。
+
 ### 5.3 建堆操作
 
+在某些情况下，我们希望使用一个列表的所有元素来构建一个堆，这个过程被称为“建堆操作”。
+
+#### 5.3.1 借助入堆操作实现
+
+我们首先创建一个空堆，然后遍历列表，依次对每个元素执行“入堆操作”，即先将元素添加至堆的尾部，再对该元素执行“从底至顶”堆化。
+
+每当一个元素入堆，堆的长度就加一。由于节点是从顶到底依次被添加进二叉树的，因此堆是“自上而下”构建的。
+
+设元素数量为 $n$ ，每个元素的入堆操作使用 $O(\log n)$ 时间，因此该建堆方法的时间复杂度为 $O(n\log n)$ 。
+
+#### 5.3.2 通过遍历堆化实现
+
+实际上，我们可以实现一种更为高效的建堆方法，共分为两步。
+
+1. 将列表所有元素原封不动地添加到堆中，此时堆的性质尚未得到满足。
+2. 倒序遍历堆（层序遍历的倒序），依次对每个非叶节点执行“从顶至底堆化”。
+
+**每当堆化一个节点后，以该节点为根节点的子树就形成一个合法的子堆**。而由于是倒序遍历，因此堆是“自下而上”构建的。
+
+之所以选择倒序遍历，是因为这样能够保证当前节点之下的子树已经是合法的子堆，这样堆化当前节点才是有效的。
+
+值得说明的是，**由于叶节点没有子节点，因此它们天然就是合法的子堆，无须堆化**。如以下代码所示，最后一个非叶节点是最后一个节点的父节点，我们从它开始倒序遍历并执行堆化，实现代码如下：
+
+``` python
+def __init__(self, nums: list[int]):
+    """构造方法，根据输入列表建堆"""
+    # 将列表元素原封不动添加进堆
+    self.max_heap = nums
+    # 堆化除叶节点以外的其他所有节点
+    for i in range(self.parent(self.size() - 1), -1, -1):
+        self.sift_down(i)
+```
+
+复杂度分析日后再补。结论是：**输入列表并建堆的时间复杂度为 $O(n)$ ，非常高效**。
+
 ### 5.4 Top-K 问题
+
+经典问题：给定一个长度为 $n$ 的无序数组 `nums` ，请返回数组中最大的 $k$ 个元素。这是一个经典的算法问题，同时也是一种典型应用，例如选择热度前 10 的新闻作为微博热搜，选取销量前 10 的商品等。
+
+对于该问题，我们先介绍两种思路比较直接的解法，再介绍效率更高的堆解法。
+
+#### 5.4.1 方法一：遍历选择
+
+我们可以进行下图所示的 $k$ 轮遍历，分别在每轮中提取第 $1, 2, 3, \dots, k$ 大的元素，时间复杂度为 $O(nk)$ 。此方法只适用于 $k\ll n$ 的情况，因为当 $k$ 与 $n$ 比较接近时，其时间复杂度趋向于 $O(n^2)$ ，非常耗时。
+
+![](../../../pics/pics1/339.png)
+
+**注意：当 $k=n$ 时，我们可以得到完整的有序序列，此时等价于“选择排序”算法。**
+#### 5.4.2 方法二：排序
+
+如下图所示，我们可以先对数组 `nums` 进行排序，再返回最右边的 $k$ 个元素，时间复杂度为 $O(n\log n)$ 。显然，该方法“超额”完成任务了，因为我们只需找出最大的 $k$ 个元素即可，而不需要排序其他元素。
+
+![](../../../pics/pics1/340.png)
+
+#### 5.4.3 方法三：堆
+
+我们可以基于堆更加高效地解决 Top-k 问题，流程如下图所示：
+
+1. 初始化一个小顶堆，其堆顶元素最小。
+2. 先将数组的前 $k$ 个元素依次入堆。
+3. 从第 $k+1$ 个元素开始，若当前元素大于堆顶元素，则将堆顶元素出堆，并将当前元素入堆。
+4. 遍历完成后，堆中保存的就是最大的 $k$ 个元素。
+
+|Step 1|Step 2|Step 3|Step 4|Step 5|Step 6|Step 7|Step 8|Step 9|
+|---|---|---|---|---|---|---|---|---|
+|<div style="width:350pt"><image src='../../../pics/pics1/341.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/342.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/342.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/344.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/345.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/346.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/347.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/348.png' width="100%" height="100%"/></div>|<div style="width:350pt"><image src='../../../pics/pics1/349.png' width="100%" height="100%"/></div>|
+
+[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def top_k(self, nums, k):
+    # 将数组的前 k 个元素入堆
+    for i in range(k):
+        self.push(nums[i])
+    # 从第 k+1 个元素开始，保持堆的长度为 k
+    for i in range(k, len(nums)):
+        print(nums[i], '-', self.peek())
+        # 若当前元素大于堆顶元素，则将堆顶元素出堆、当前元素入堆
+        if nums[i] < self.peek():
+            self.pop()
+            self.push(nums[i])
+```
+
+总共执行了 $n$ 轮入堆和出堆，堆的最大长度为 $k$ ，因此时间复杂度为 $O(n \log k)$ 。该方法的效率很高，当 $k$ 较小时，时间复杂度趋向 $O(n)$ ；当 $k$ 较大时，时间复杂度不会超过 $O(n \log n)$ 。
+
+另外，该方法适用于**动态数据流**的使用场景。在不断加入数据时，我们可以持续维护堆内的元素，从而实现最大的 $k$ 个元素的动态更新。
 
 ### 5.5 斐波那契堆
 
@@ -691,19 +937,11 @@ AVL树与BST的节点查找操作一致，在此不再赘述。
 
 ## 7. 线段树
 
-### 7.1 简介
-
-### 7.2 基本操作
-
-### 7.3 线段树常见题型
-
-### 7.4 拓展
+日后再补
 
 ## 8. 并查集
 
-### 8.1 简介
-
-### 
+日后再补
 
 ## 9. 面试题
 

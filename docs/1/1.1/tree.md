@@ -454,7 +454,7 @@ def __init__(self, value: int):
     self.right = None  # 右子节点引用
 ```
 
-**节点高度**是指从该节点到它的**最远叶节点**的距离，即所经过的**边**的数量。需要特别注意的是，叶节点的高度为0，而空节点的高度为-1。我们将创建两个工具函数，分别用于获取和更新节点的高度：
+**节点高度**是指从该节点到它的**最远叶节点**的距离，即所经过的**边**的数量。需要特别注意的是，叶节点的高度为0，而空节点的高度为-1。我们将创建两个工具函数，分别用于获取和更新节点的高度，[实现代码](../../../code/1/1.1/tree/README.md)如下：
 
 ``` python
 def height(self, node):
@@ -467,7 +467,7 @@ def _update_height(self, node):
 
 ```
 
-另外，节点的 **平衡因子(balance factor)** 定义为节点**左子树的高度减去右子树的高度**，同时规定空节点的平衡因子为0。我们同样将获取节点平衡因子的功能封装成函数，方便后续使用：
+另外，节点的 **平衡因子(balance factor)** 定义为节点**左子树的高度减去右子树的高度**，同时规定空节点的平衡因子为0。我们同样将获取节点平衡因子的功能封装成函数，方便后续使用，[实现代码](../../../code/1/1.1/tree/README.md)如下：
 
 ``` python
 def balance_factor(self, node):
@@ -481,27 +481,191 @@ def balance_factor(self, node):
 
 ### 2.1 AVL树旋转
 
+AVL 树的特点在于“旋转”操作，它能够在不影响二叉树的中序遍历序列的前提下，使失衡节点重新恢复平衡。换句话说，**旋转操作既能保持“二叉搜索树”的性质，也能使树重新变为“平衡二叉树”**。
+
+我们将平衡因子绝对值 $>1$ 的节点称为“失衡节点”。根据节点失衡情况的不同，旋转操作分为四种：右旋、左旋、先左旋后右旋、先右旋后左旋。下面详细介绍这些旋转操作。
+
 #### 2.1.1 右旋
+
+如下图所示，节点下方为平衡因子。从底至顶看，二叉树中首个失衡节点是“节点 3”。我们关注以该失衡节点为根节点的子树，将该节点记为 `node` ，其左子节点记为 `child` ，执行“右旋”操作。完成右旋后，子树恢复平衡，并且仍然保持二叉搜索树的性质。
+
+|Step 1|Step 2|Step 3|Step 4
+|---|---|---|---|
+|<div style="width:200pt"><image src='../../../pics/pics1/308.png' width="100%" height="100%"/></div>|<div style="width:200pt"><image src='../../../pics/pics1/309.png' width="100%" height="100%"/></div>|<div style="width:200pt"><image src='../../../pics/pics1/310.png' width="100%" height="100%"/></div>|<div style="width:200pt"><image src='../../../pics/pics1/311.png' width="100%" height="100%"/></div>|
+
+如下图所示，当节点 `child` 有右子节点（记为 `grand_child` ）时，需要在右旋中添加一步：将 `grand_child` 作为 `node` 的左子节点。
+
+![](../../../pics/pics1/312.png)
+
+“向右旋转”是一种形象化的说法，实际上需要通过修改节点指针来实现，[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _right_rotate(self, node):
+    child = node.left
+    grand_child = child.right
+    # 以child为原点，将node向右旋转
+    child.right = node
+    node.left = grand_child
+    # 更新节点高度
+    self._update_height(node)
+    self._update_height(child)
+    return child
+```
 
 #### 2.1.2 左旋
 
+相应地，如果考虑上述失衡二叉树的“镜像”，则需要执行下图所示的“左旋”操作。
+
+![](../../../pics/pics1/313.png)
+
+同理，如下图所示，当节点 `child` 有左子节点（记为 `grand_child` ）时，需要在左旋中添加一步：将 `grand_child` 作为 `node` 的右子节点。
+
+![](../../../pics/pics1/314.png)
+
+可以观察到，**右旋和左旋操作在逻辑上是镜像对称的，它们分别解决的两种失衡情况也是对称的**。基于对称性，我们只需将右旋的实现代码中的所有的 `left` 替换为 `right` ，将所有的 `right` 替换为 `left` ，即可得到左旋的[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _left_rotate(self, node):
+    child = node.right
+    grand_child = child.left
+    # 以child为原点，将node向右旋转
+    child.left = node
+    node.right = grand_child
+    # 更新节点高度
+    self._update_height(node)
+    self._update_height(child)
+    return child
+```
+
 #### 2.1.3 先左旋后右旋
+
+对于下图中的失衡节点 3 ，仅使用左旋或右旋都无法使子树恢复平衡。此时需要先对 `child` 执行“左旋”，再对 `node` 执行“右旋”。
+
+![](../../../pics/pics1/315.png)
 
 #### 2.1.4 先右旋后左旋
 
+如下图所示，对于上述失衡二叉树的镜像情况，需要先对 `child` 执行“右旋”，再对 `node` 执行“左旋”。
+
+![](../../../pics/pics1/316.png)
+
 #### 2.1.5 旋转的选择
+
+下图展示的四种失衡情况与上述案例逐个对应，分别需要采用右旋、先左旋后右旋、先右旋后左旋、左旋的操作。
+
+![](../../../pics/pics1/317.png)
+
+如下表所示，我们通过判断失衡节点的平衡因子以及较高一侧子节点的平衡因子的正负号，来确定失衡节点属于上图中的哪种情况。
+
+|失衡节点的平衡因子|子节点的平衡因子|应采用的旋转方法|
+|---|---|---|
+|$>1$（左偏树）|$\geqslant 0$|右旋|
+|$>1$（左偏树）|$<0$|先左旋后右旋|
+|$<-1$（右偏树）|$\leqslant 0$|左旋|
+|$<-1$（右偏树）|$>0$|先右旋后左旋|
+
+为了便于使用，我们将旋转操作封装成一个函数。有了这个函数，我们就能对各种失衡情况进行旋转，使失衡节点重新恢复平衡。[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def rotate(self, node):
+    balance_factor = self._balance_factor(node)
+    if balance_factor > 1:
+        # 左偏树
+            if self.balance_factor(node.left) >= 0:
+            # 右旋
+            return self._right_rotate(node)
+        else:
+            # 先左旋后右旋
+            node.left = self._left_rotate(node.left)
+            return self._right_rotate(node)
+    elif balance_factor < -1:
+        # 右偏树
+        if self.balance_factor(node.right) <= 0:
+            # 左旋
+            return self._left_rotate(node)
+        else:
+            # 先右旋后左旋
+            node.right = self._right_rotate(node.right)
+        return self._left_rotate(node)
+    # 平衡树，无须旋转，直接返回
+    return node
+```
 
 ### 2.2 基本操作
 
 #### 2.2.1 插入
 
+AVL 树的节点插入操作与二叉搜索树在主体上类似。唯一的区别在于，在 AVL 树中插入节点后，从该节点到根节点的路径上可能会出现一系列失衡节点。因此，**我们需要从这个节点开始，自底向上执行旋转操作，使所有失衡节点恢复平衡**。[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _insert_helper(self, node, key):
+    if node is None:
+        return AVLTreeNode(key)
+    # 1. 查找插入位置并插入节点
+    if key < node.value:
+        node.left = self._insert_helper(node.left, key)
+    elif key > node.value:
+        node.right = self._insert_helper(node.right, key)
+    else:
+        # 重复节点不插入，直接返回
+        return node
+    # 更新节点高度
+    self._update_height(node)
+    # 2. 执行旋转操作，使该子树重新恢复平衡
+    return self._rotate(node)
+
+def insert(self, key):
+    self.root = self._insert_helper(self.root, key)
+```
+
 #### 2.2.2 删除
+
+类似地，在二叉搜索树的删除节点方法的基础上，需要从底至顶执行旋转操作，使所有失衡节点恢复平衡。[实现代码](../../../code/1/1.1/tree/README.md)如下：
+
+``` python
+def _remove_helper(self, node, key):
+    # 1. 查找节点并删除
+    if node is None:
+        return None
+    # 1. 查找节点并删除
+    if key < node.value:
+        node.left = self._remove_helper(node.left, key)
+    elif key > node.value:
+        node.right = self._remove_helper(node.right, key)
+    else:
+        if node.left is None or node.right is None:
+            child = node.left or node.right
+            # 子节点数量 = 0 ，直接删除 node 并返回
+            if child is None:
+                return None
+            # 子节点数量 = 1 ，直接删除 node
+            else:
+                node = child
+        else:
+            # 子节点数量 = 2 ，则将中序遍历的下个节点删除，并用该节点替换当前节点
+            temp = node.right
+            while temp.left is not None:
+                temp = temp.left
+            node.right = self._remove_helper(node.right, temp.value)
+            node.value = temp.value
+    # 更新节点高度
+    self._update_height(node)
+    # 2. 执行旋转操作，使该子树重新恢复平衡
+    return self._rotate(node)
+
+def remove(self, key):
+    self.root = self._remove_helper(self.root, key)
+```
 
 #### 2.2.3 查找
 
 AVL树与BST的节点查找操作一致，在此不再赘述。
 
 ### 2.3 AVL树典型应用
+
+- 红黑树在许多应用中比 AVL 树更受欢迎。这是因为红黑树的平衡条件相对宽松，在红黑树中插入与删除节点所需的旋转操作相对较少，其节点增删操作的平均效率更高。
+- 组织和存储大型数据，适用于高频查找、低频增删的场景（同BST）。
+- 用于构建数据库中的索引系统。
 
 ## 3. 红黑树
 

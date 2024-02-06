@@ -118,40 +118,7 @@ class BinTree:
                 tmp = tmp.left
             self.remove(tmp.value) # 递归删除节点
             cur.value = tmp.value
-
-class AVLTreeNode:
-    """
-        AVL 树节点类
-    """    
-
-    def __init__(self, value: int):
-        self.value = value # 节点值
-        self.height = 0    # 节点高度
-        self.left = None   # 左子节点引用
-        self.right = None  # 右子节点引用
-
-class AVLTree:
-    """
-        AVL 树
-    """
-
-    def __init__(self, root):
-        self.root = root
-
-    def height(self, node):
-        if node is not None:
-            return node.height
-        return -1
-
-    def _update_height(self, node):
-        node.height = max([self.height(node.left), self.height(node.right)]) + 1
     
-    def _balance_factor(self, node):
-        if node is None:
-            return 0
-        # 节点平衡因子 = 左子树高度 - 右子树高度
-        return self.height(node.left) - self.height(node.right)
-
 ##### Binary Tree 1
 root1 = BinTreeNode(1)
 node2 = BinTreeNode(2)

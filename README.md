@@ -17,8 +17,8 @@
 
 - 1.计算机基础
     - 1.1 数据结构与算法
-        - 数组
-        - 链表
+        - 数组([文档](docs/1/1.1/array.md), [代码](code/1/1.1/array/README.md))
+        - 链表([文档](docs/1/1.1/link.md), [代码](code/1/1.1/link/README.md))
         - 栈
         - 队列
         - 树([文档](docs/1/1.1/tree.md), [代码](code/1/1.1/tree/README.md))

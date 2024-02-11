@@ -19,8 +19,8 @@
     - 1.1 数据结构与算法
         - 数组([文档](docs/1/1.1/array.md), [代码](code/1/1.1/array/README.md))
         - 链表([文档](docs/1/1.1/link.md), [代码](code/1/1.1/link/README.md))
-        - 栈
-        - 队列
+        - 栈([文档](docs/1/1.1/stack.md), [代码](code/1/1.1/stack/README.md))
+        - 队列([文档](docs/1/1.1/queue.md), [代码](code/1/1.1/queue/README.md))
         - 树([文档](docs/1/1.1/tree.md), [代码](code/1/1.1/tree/README.md))
         - 图([文档](docs/1/1.1/graph.md), [代码](code/1/1.1/graph/graph.py))
         - 字符串算法([文档](docs/1/1.1/string.md), [代码](code/1/1.1/string/string.cpp))

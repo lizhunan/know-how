@@ -72,23 +72,37 @@
         - 概述([文档](docs/4/4.1/overview.md))
         - 数据分析
         - 数据预处理
-        - 线性回归
-        - 逻辑回归
+        - 特征工程([文档](docs/4/4.1/feature_engineering.md))
+        - 线性回归([文档](docs/4/4.1/linear_regression.md))
+        - 逻辑回归([文档](docs/4/4.1/logistic_regression.md))
         - KNN
         - 贝叶斯模型
         - 决策树
-        - 神经网络
         - 集成学习
         - 模型评估([文档](docs/4/4.1/evaluation.md), [代码](code/4/4.1//evaluation.ipynb))
-        - 模型调优
         - 无监督学习
-        - 强化学习
+        - 强化学习（暂缺）
     - 4.2 深度学习
+        - 模型优化([文档](docs/4/4.2/optimization.md))
+        - 神经网络
+        - 卷积神经网络
+        - 循环神经网络
+        - 递归神经网络
+        - 对抗生成网络（暂缺）
+        - 注意力机制
+        - Transformer
     - 4.3 计算机视觉
-        - 概述([文档](docs/4/4.3/overview.md)）
-        - 图像预处理([文档](docs/4/4.3/preprocessing_td.md), [代码](code/4/4.3/README.md))
-        - 特征提取与匹配([文档](docs/4/4.3/feature_td.md))
-        - 基于深度学习
+        - 传统计算机视觉
+            - 概述([文档](docs/4/4.3/overview.md)）
+            - 图像预处理([文档](docs/4/4.3/preprocessing_td.md), [代码](code/4/4.3/README.md))
+            - 特征提取与匹配([文档](docs/4/4.3/feature_td.md))
+        - 基于深度学习计算机视觉
+            - 图像增广
+            - 常见CNN结构
+            - 训练技巧
+            - 图像分类
+            - 目标检测
+            - 图像分割
     - 4.4 NLP（暂缺）
     - 4.5 语音（暂缺）
     - 4.6 模型部署与优化

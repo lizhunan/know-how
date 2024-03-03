@@ -809,13 +809,11 @@ def fib(self, n: int) -> int:
 
 这种使用缓存（哈希表、集合或数组）保存计算结果，从而避免子问题重复计算的方法，就是**动态规划算法**。
 
-### 7.2 特征
+### 7.2 基本思路
 
-### 7.3 基本思路
+### 7.3 例题
 
-### 7.4 例题
-
-#### 7.4.1 [爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
+#### 7.3.1 [爬楼梯](https://leetcode.cn/problems/climbing-stairs/)
 
 假设你正在爬楼梯。需要 n 阶你才能到达楼顶。
 
@@ -860,7 +858,7 @@ class Solution(object):
         return dp[n]
 ```
 
-#### 7.4.2 [不同路径](https://leetcode.cn/problems/unique-paths/)
+#### 7.3.2 [不同路径](https://leetcode.cn/problems/unique-paths/)
 
 一个机器人位于一个 m x n 网格的左上角 （起始点在下图中标记为 “Start” ）。
 
@@ -896,3 +894,5 @@ class Solution(object):
                 dp[i][j] = dp[i][j-1] + dp[i-1][j]
         return dp[m-1][n-1]
 ```
+
+### 7.4 

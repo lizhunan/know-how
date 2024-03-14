@@ -75,22 +75,21 @@
         - 特征工程([文档](docs/4/4.1/feature_engineering.md))
         - 线性回归([文档](docs/4/4.1/linear_regression.md))
         - 逻辑回归([文档](docs/4/4.1/logistic_regression.md))
-        - KNN
-        - 贝叶斯模型
-        - 决策树
-        - 集成学习
+        - KNN([文档](docs/4/4.1/knn.md))
+        - 贝叶斯模型([文档](docs/4/4.1/naive_bayes_classifier.md))
+        - 决策树([文档](docs/4/4.1/decision_tree.md))
+        - 集成学习([文档](docs/4/4.1/ensemble_learning.md))
         - 模型评估([文档](docs/4/4.1/evaluation.md), [代码](code/4/4.1//evaluation.ipynb))
         - 无监督学习
         - 强化学习（暂缺）
     - 4.2 深度学习
         - 模型优化([文档](docs/4/4.2/optimization.md))
-        - 神经网络
-        - 卷积神经网络
-        - 循环神经网络
-        - 递归神经网络
+        - 神经网络([文档](docs/4/4.2/neural_network.md))
+        - 卷积神经网络([文档](docs/4/4.2/cnn.md))
+        - 循环神经网络([文档](docs/4/4.2/rnn.md))
         - 对抗生成网络（暂缺）
-        - 注意力机制
-        - Transformer
+        - 注意力机制([文档](docs/4/4.2/attention_mechanism.md))
+        - Transformer([文档](docs/4/4.2/transformer.md)
     - 4.3 计算机视觉
         - 传统计算机视觉
             - 概述([文档](docs/4/4.3/overview.md)）

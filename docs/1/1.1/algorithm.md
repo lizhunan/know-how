@@ -753,6 +753,16 @@ class Solution(object):
 
 ```
 
+### 6.6 相关题目
+
+|题号|题目|标签|难度|
+|---|---|---|---|
+|0455|[分发饼干](https://leetcode.cn/problems/assign-cookies/description/)|贪心、数组、双指针、排序|简单|
+|0860|[柠檬水找零](https://leetcode.cn/problems/lemonade-change/description/)|贪心、数组|简单|
+|0056|[合并区间](https://leetcode.cn/problems/merge-intervals/description/)|数组、排序、贪心|中等|
+|0435|[无重叠区间](https://leetcode.cn/problems/non-overlapping-intervals/description/)|贪心、数组、动态规划、排序|中等|
+|0452|[用最少数量的箭引爆气球](https://leetcode.cn/problems/minimum-number-of-arrows-to-burst-balloons/description/)|贪心、数组、排序|中等|
+
 ## 7. 动态规划
 
 ### 7.1 简介

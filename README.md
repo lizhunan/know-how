@@ -89,7 +89,7 @@
         - 循环神经网络([文档](docs/4/4.2/rnn.md))
         - 对抗生成网络（暂缺）
         - 注意力机制([文档](docs/4/4.2/attention_mechanism.md))
-        - Transformer([文档](docs/4/4.2/transformer.md)
+        - Transformer([文档](docs/4/4.2/transformer.md))
     - 4.3 计算机视觉
         - 传统计算机视觉
             - 概述([文档](docs/4/4.3/overview.md)）

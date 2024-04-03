@@ -177,13 +177,74 @@ $$
 
 类似于 BN，LN 也包含另外两个可学习参数：放缩参数（Scale Parameter）$\gamma$ 和平移参数（Shift Parameter）$\beta$，二者在所有时间步中共享。
 
+对于LN与BN而言，**BN取的是不同样本的同一个特征**，而**LN取的是同一个样本的不同特征**。在LN和BN都能使用的场景中，BN的效果一般优于LN，原因是**基于不同数据，由同一特征得到的归一化特征更不容易损失信息**。通常，LN适用于RNN、LSTM和Transformer等不定长序列模型（动态网络）。以RNN的角度为例，**LN的均值和方差计算仅取决于当前时间步的层输入，而不取决于当前batch的所有输入，因此可用于任意长度的序列（batch size不固定），由LN得到的模型更稳定且起到正则化的作用**。
+
+但是当将LN添加到CNN之后，实验结果发现破坏了卷积学习到的特征，模型无法收敛，所以在CNN之后使用非LN的Normalization是一个更好的选择。然而，在论文 *[A ConvNet for the 2020s](https://arxiv.org/pdf/2201.03545.pdf)* 中提到一个问题，2020年的CNN应该是什么样子。以下是 ConvNext 对于 ConvNet的改进总结：
+
+![](../../../pics/pics1/562.png)
+
+其中有一项就是将BN换成LN，最终Accuracy涨了0.1%。以下是原文：
+
+> Directly substituting LN for BN in the original ResNet will result in suboptimal performance [83]. With all the modifications in network architecture and training techniques, here we revisit the impact of using LN in place of BN. We observe that our ConvNet model does not have any difficulties training with LN; in fact, the performance is slightly better, obtaining an accuracy of 81.5%.
+
+为什么在此之前，CNN使用BN比LN更优呢？答案在文中提到改进的ConvNext模型涉及到以下方面：
+
+- 需要更大的卷积核；
+- ReLU对LN不合适；
+- stage ratio问题；
+- 用的不是depth separable conv等。
+
+所以，简单来说LayerNorm在现代CNN里是适用的，甚至是更好的。
+
+### 3.3 LN与ICS和损失平面平滑
+
+LN能减轻ICS吗？当然可以，至少LN将每个训练样本都归一化到了相同的分布上。而在BN的文章中介绍过几乎所有的归一化方法都能起到平滑损失平面的作用。所以从原理上讲，LN能加速收敛速度的。
+
 ## 4. Instance Normalization(IN)
+
+Instance Normalization(IN)最初用于图像风格迁移。作者发现，在生成模型中，feature maps的各channel的均值和方差会影响到最终生成图像的风格，因此可以**先把图像在channel维度归一化，然后再用目标风格图片对应channel的均值和标准差“去归一化”，以获得目标图片的风格**。IN也在单个样本内进行，不依赖batch size。
+
+![](../../../pics/pics1/563.png)
+
+以上图为例，设当前有一个batch的feature map $x \in \mathbb{R}^{N \times C \times H \times W}$，其 $batch size=N$，通道数 $channal=C$，尺寸为 $H,W$。**计算IN时，将沿维度 $N$ 和维度 $C$ 在维度 $H, W$ 上操作**。更具体地，先对batch中第1个feature map的第1个channel求和得到 $H \times W$ 个 pixel 之和，然后除以 $H \times W$ 得到第1个feature map的第1个channel的均值 $\mu_{n=1,c=1}(x)$。同理，可得到其他均值 $\mu_{n=i,c=j}(x), i \in 1, 2, \dots, N, c \in 1, 2, \dots, C$，从而得到**batch内各个样本各个通道的均值向量**：$\mu_{nc}(x)=[\mu_{n=1,c=1}(x), \mu_{n=1,c=2}(x), \dots, \mu_{n=N,c=C}(x)]^T \in \mathbb{R}^C$。类似地，可以计算出**batch内各个batch各个通道的标准差向量**：$\sigma_{nc}(x)=[\sigma_{n=1,c=1}(x), \sigma_{n=1,c=2}(x), \dots, \sigma_{n=N,c=C}(x)]^T \in \mathbb{R}^C$。$\mu_{nc}(x)$ 和 $\sigma_{nc}(x)$ 的计算公式如下：
+
+$$
+\begin{align}
+\mu_{nc}(x) &= \frac{1}{HW} \sum^H_{h=1} \sum^W_{w=1} x_{nchw} \\
+\sigma_{nc}(x) &= \sqrt{\frac{1}{HW} \sum^H_{h=1} \sum^W_{w=1} (x_{nchw} - \mu_{nc}(x))^2 + \epsilon}
+\end{align}
+$$
+
+> 对上面的公式可以进行以下理解：
+> 如果把 $x \in \mathbb{R}^{N \times C \times H \times W}$ 类比一摞书，这摞书一共有 $N$ 本，每本有 $C$ 页，每页有 $H$ 行，每行有 $W$ 个字符。LN求均值时，相当于把一页书中所有的字都加起来，再除以该页的总字数：$H \times W$，即求该页的“平均字”，求标准差同理。
+
+有别于BN在判别任务上的优势，IN 在GAN，Style Transfer和Domain Adaptation等生成任务上的效果优于BN。因为**BN同时对多个样本（batch内）统计均值和方差，而这多个样本的Domain很可能不同，相当于把不同Domain的数据分布进行了归一化**。而IN仅对单样本单通道内进行归一化，避免了不同Doman之间的相互影响。
 
 ## 5. Group Normalization(GN)
 
+Group Normalization(GN)适用于**图像分割等显存占用较大**的任务。对于这类任务，batch size的大小设置很可能只能是个位数（如 1、2、4 等），再大就爆显存了。而当batchsize取小数字时，BN的表现很差，因为无法通过几个样本来近似数据集整体的均值和标准差（代表性较差）。而作为LN和IN的折中，GN也是独立于batch的。
+
+![](../../../pics/pics1/564.png)
+
+以上图为例，设当前有一个batch的feature map $x \in \mathbb{R}^{N \times C \times H \times W}$，其 $batch size=N$，通道数 $channal=C$，尺寸为 $H,W$。**计算GN时，将沿维度 $N$ 和维度 $C$ （准确的说是通道组维度 $G$）在维度 $H, W$ 上操作**。更具体地，先对batch中第1个feature map的channel划分为 $G$ 组，则每组共有 $C/G$ 个channels。对batch中第一个feature map的第1组channels求和得到 $C/G \times H \times W$ 个 pixel 之和，然后除以 $C/G \times H \times W$ 得到第1个feature map的第1组channels的均值 $\mu_{n=1,g=1}(x)$。同理，可得到其他均值 $\mu_{n=i,g=j}(x), i \in 1, 2, \dots, N, j \in 1, 2, \dots, G$，从而得到**batch内各个样本各个组通道的均值向量**：$\mu_{ng}(x)=[\mu_{n=1,g=1}(x), \mu_{n=1,g=2}(x), \dots, \mu_{n=N,g=G}(x)]^T \in \mathbb{R}^{N \times G}$。类似地，可以计算出**batch内各个样本各个组通道的标准差向量**：$\sigma_{ng}(x)=[\sigma_{n=1,g=1}(x), \sigma_{n=1,g=2}(x), \dots, \sigma_{n=N,g=G}(x)]^T \in \mathbb{R}^{N \times G}$。$\mu_{ng}(x)$ 和 $\sigma_{ng}(x)$ 的计算公式如下：
+
+$$
+\begin{align}
+\mu_{ng}(x) &= \frac{1}{(C/G)HW} \sum^{(g+1)C/G}_{c=gC/G} \sum^H_{h=1} \sum^W_{w=1} x_{nchw} \\
+\sigma_{ng}(x) &= \sqrt{\frac{1}{(C/G)HW} \sum^{(g+1)C/G}_{c=gC/G} \sum^H_{h=1} \sum^W_{w=1} (x_{nchw} - \mu_{ng}(x))^2 + \epsilon}
+\end{align}
+$$
+
+> 对上面的公式可以进行以下理解：
+> 如果把 $x \in \mathbb{R}^{N \times C \times H \times W}$ 类比一摞书，这摞书一共有 $N$ 本，每本有 $C$ 页，每页有 $H$ 行，每行有 $W$ 个字符。GN求均值时，相当于把一本C页的书平均分为G份，每份分成有 $C/G$ 页的小册子，求小册子的“平均字”，求标准差同理。
+
+**在batch size较大时，GN效果略低于BN，但当batch size较小时，明显优于BN**。 由于GN在channel维度上分组，因此要求channel数 $C$是组数 $G$ 的倍数。 GN常应用于目标检测，语义分割等**要求图像分辨率尽可能大的任务，由于内存限制，更大分辨率意为着只能取更小的batch size**，此时可以选择GN这种不依赖于batch size的归一化方法。
+
 ## 6. Weight Normalization(WN)
 
-## 7. 总结
+Weight Normalization(WN)出自 *[Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/pdf/1602.07868.pdf)*。
+
+在神经网络中权重向量的重参数化，**将这些权重向量的长度与其方向解耦**。通过以这种方式重新设置权重，改善了优化问题的条件，并加快了随机梯度下降的收敛速度。WN受到BN的启发，但并未在小batch中引入实例间的任何依赖关系（不依赖batch size）。这意味WN还可以成功地应用于递归模型（如 LSTM）和对噪声敏感的应用（例如深度强化学习或生成模型），而BN则不太适合此类方法。此外，WN的计算开销较低，从而允许在相同的时间内采取更多的优化步骤。**可见，诸如BN、LN、IN、GN等都对feature maps进行Normalization，而WN则对weights进行Normalization**。
 
 ## 参考文献
 
@@ -191,3 +252,5 @@ $$
 - [How Does Batch Normalization Help Optimization?](https://arxiv.org/pdf/1805.11604.pdf)
 - [An empirical analysis of the optimization of deep network loss surfaces](https://arxiv.org/pdf/1612.04010.pdf)
 - [Layer Normalization](https://arxiv.org/pdf/1607.06450.pdf)
+- [A ConvNet for the 2020s](https://arxiv.org/pdf/2201.03545.pdf)
+- [Weight Normalization: A Simple Reparameterization to Accelerate Training of Deep Neural Networks](https://arxiv.org/pdf/1602.07868.pdf)

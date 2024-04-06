@@ -1,4 +1,4 @@
-# Normalization
+# 归一化(Normalization)
 
 - 编辑：李竹楠
 - 日期：2024/04/01
